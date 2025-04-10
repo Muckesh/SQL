@@ -1,0 +1,58 @@
+Aggregate functions calculate a single result from multiple rows
+-> they are used for summarizing datas
+
+COUNT()	-> Counts number of rows -> COUNT(*) counts all rows
+SUM() -> Adds up numeric column -> SUM(Salary)
+AVG() -> Calculates average -> AVG(Salary)
+MIN() -> Finds smallest value -> MIN(Salary)
+MAX() -> Finds largest value	-> MAX(Salary)
+
+SELECT COUNT(*) FROM Employee;
++----------+
+| COUNT(*) |
++----------+
+|        5 |
++----------+
+1 row in set (0.01 sec)
+
+SELECT SUM(Salary) FROM Employee;
++-------------+
+| SUM(Salary) |
++-------------+
+|      300000 |
++-------------+
+1 row in set (0.00 sec)
+
+SELECT AVG(Salary) FROM Employee;
++-------------+
+| AVG(Salary) |
++-------------+
+|  60000.0000 |
++-------------+
+1 row in set (0.00 sec)
+
+GROUP BY -> Group rows and then apply aggregate functions
+Without GROUP BY -> Aggregate entire table
+With GROUP BY -> Aggregate each group separately
+
+SELECT Department, COUNT(*) AS TotalEmployee FROM Employee GROUP BY Department;
++------------+---------------+
+| Department | TotalEmployee |
++------------+---------------+
+| Sales      |             3 |
+| HR         |             1 |
+| IT         |             1 |
++------------+---------------+
+3 rows in set (0.00 sec)
+
+HAVING -> Filter Grouped Data (after aggregation)
+WHERE filters rows before grouping
+HAVING filters groups after grouping
+
+SELECT Department, COUNT(*) AS TotalEmployee FROM Employee GROUP BY Department HAVING COUNT(*) > ;
++------------+---------------+
+| Department | TotalEmployee |
++------------+---------------+
+| Sales      |             3 |
++------------+---------------+
+1 row in set (0.00 sec)
