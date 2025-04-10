@@ -1,0 +1,61 @@
+CREATE DATABASE Presidio; -> to create a database named Presidio.
+
+SHOW DATABASES; -> to list all the available databases.
+
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| presidio           |
+| sys                |
+| ultra              |
++--------------------+
+6 rows in set (0.03 sec)
+
+USE Presidio; -> to switch into the Presidio database.
+
+Database changed
+
+CREATE TABLE Employees (EmployeeID INT PRIMARY KEY AUTO_INCREMENT, Name VARCHAR(100) NOT NULL, Department VARCHAR(50), Salary DECIMAL(10,2), JoiningDate DATE);
+                    -> to create a table named employees with the above column names with datatypes and keys.
+Query OK, 0 rows affected (0.02 sec)
+
+SHOW TABLES; -> to list all the available tables under the database.
++--------------------+
+| Tables_in_presidio |
++--------------------+
+| employees          |
++--------------------+
+1 row in set (0.00 sec)
+
+DESC Employees;  -> to describe the structure of the employees table.
++-------------+---------------+------+-----+---------+----------------+
+| Field       | Type          | Null | Key | Default | Extra          |
++-------------+---------------+------+-----+---------+----------------+
+| EmployeeID  | int           | NO   | PRI | NULL    | auto_increment |
+| Name        | varchar(100)  | NO   |     | NULL    |                |
+| Department  | varchar(50)   | YES  |     | NULL    |                |
+| Salary      | decimal(10,2) | YES  |     | NULL    |                |
+| JoiningDate | date          | YES  |     | NULL    |                |
++-------------+---------------+------+-----+---------+----------------+
+5 rows in set (0.00 sec)
+
+INSERT INTO Employees(Name,Department,Salary,JoiningDate) VALUES ('John Doe','HR',55000.00,'2025-01-15');
+                -> to insert values into the employees table.
+
+INSERT INTO Employees(Name,Department,Salary,JoiningDate) VALUES ('Jane Doe','Finance',60000.00,'2025-02-02'),('Elliot Alderson','Cybersecurity',80000.00,'2025-01-01'), ('Dolores Haze','Testing',50000.00,'2025-03-06');
+Query OK, 3 rows affected (0.00 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+SELECT * FROM Employees; -> to display all the columns from the employees table.
++------------+-----------------+---------------+----------+-------------+
+| EmployeeID | Name            | Department    | Salary   | JoiningDate |
++------------+-----------------+---------------+----------+-------------+
+|          1 | John Doe        | HR            | 55000.00 | 2025-01-15  |
+|          2 | Jane Doe        | Finance       | 60000.00 | 2025-02-02  |
+|          3 | Elliot Alderson | Cybersecurity | 80000.00 | 2025-01-01  |
+|          4 | Dolores Haze    | Testing       | 50000.00 | 2025-03-06  |
++------------+-----------------+---------------+----------+-------------+
+4 rows in set (0.00 sec)
