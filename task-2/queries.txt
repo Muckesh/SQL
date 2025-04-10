@@ -1,0 +1,109 @@
+CREATE TABLE Employee(ID INT PRIMARY KEY AUTO_INCREMENT, FirstName VARCHAR(50) NOT NULL, LastName VARCHAR(50), Department VARCHAR(50),Salary INT);
+
+INSERT INTO Employee (FirstName, LastName, Department, Salary) VALUES
+('John', 'Doe', 'Sales', 60000),
+('Jane', 'Smith', 'HR', 50000),
+('Alice', 'Johnson', 'Sales', 70000),
+('Bob', 'Brown', 'IT', 55000),
+('Carol', 'Davis', 'Sales', 65000);
+
+select * from employee;
++----+-----------+----------+------------+--------+
+| ID | FirstName | LastName | Department | Salary |
++----+-----------+----------+------------+--------+
+|  1 | John      | Doe      | Sales      |  60000 |
+|  2 | Jane      | Smith    | HR         |  50000 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |
+|  4 | Bob       | Brown    | IT         |  55000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |
++----+-----------+----------+------------+--------+
+5 rows in set (0.00 sec)
+
+SELECT * FROM Employee WHERE Department = 'Sales'; -> where clause is used for conditions
++----+-----------+----------+------------+--------+
+| ID | FirstName | LastName | Department | Salary |
++----+-----------+----------+------------+--------+
+|  1 | John      | Doe      | Sales      |  60000 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |
++----+-----------+----------+------------+--------+
+3 rows in set (0.00 sec)
+
+SELECT * FROM Employee ORDER BY Salary; -> order by is used to sort the result
++----+-----------+----------+------------+--------+
+| ID | FirstName | LastName | Department | Salary |
++----+-----------+----------+------------+--------+
+|  2 | Jane      | Smith    | HR         |  50000 |
+|  4 | Bob       | Brown    | IT         |  55000 |
+|  1 | John      | Doe      | Sales      |  60000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |
++----+-----------+----------+------------+--------+
+5 rows in set (0.00 sec)
+
+ SELECT * FROM Employee ORDER BY Salary DESC;
++----+-----------+----------+------------+--------+
+| ID | FirstName | LastName | Department | Salary |
++----+-----------+----------+------------+--------+
+|  3 | Alice     | Johnson  | Sales      |  70000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |
+|  1 | John      | Doe      | Sales      |  60000 |
+|  4 | Bob       | Brown    | IT         |  55000 |
+|  2 | Jane      | Smith    | HR         |  50000 |
++----+-----------+----------+------------+--------+
+5 rows in set (0.00 sec)
+
+SELECT * FROM Employee WHERE Salary > 60000;
++----+-----------+----------+------------+--------+
+| ID | FirstName | LastName | Department | Salary |
++----+-----------+----------+------------+--------+
+|  3 | Alice     | Johnson  | Sales      |  70000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |
++----+-----------+----------+------------+--------+
+2 rows in set (0.00 sec)
+
+
+SELECT * FROM Employee ORDER BY LastName DESC;
++----+-----------+----------+------------+--------+
+| ID | FirstName | LastName | Department | Salary |
++----+-----------+----------+------------+--------+
+|  2 | Jane      | Smith    | HR         |  50000 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |
+|  1 | John      | Doe      | Sales      |  60000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |
+|  4 | Bob       | Brown    | IT         |  55000 |
++----+-----------+----------+------------+--------+
+5 rows in set (0.00 sec)
+
+SELECT * FROM Employee ORDER BY LastName;
++----+-----------+----------+------------+--------+
+| ID | FirstName | LastName | Department | Salary |
++----+-----------+----------+------------+--------+
+|  4 | Bob       | Brown    | IT         |  55000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |
+|  1 | John      | Doe      | Sales      |  60000 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |
+|  2 | Jane      | Smith    | HR         |  50000 |
++----+-----------+----------+------------+--------+
+5 rows in set (0.00 sec)
+
+
+SELECT * FROM Employee WHERE Department = 'Sales' AND Salary > 60000;
++----+-----------+----------+------------+--------+
+| ID | FirstName | LastName | Department | Salary |
++----+-----------+----------+------------+--------+
+|  3 | Alice     | Johnson  | Sales      |  70000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |
++----+-----------+----------+------------+--------+
+2 rows in set (0.00 sec)
+
+SELECT * FROM Employee WHERE Department = 'Sales' OR Department = 'HR';
++----+-----------+----------+------------+--------+
+| ID | FirstName | LastName | Department | Salary |
++----+-----------+----------+------------+--------+
+|  1 | John      | Doe      | Sales      |  60000 |
+|  2 | Jane      | Smith    | HR         |  50000 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |
++----+-----------+----------+------------+--------+
+4 rows in set (0.00 sec)
