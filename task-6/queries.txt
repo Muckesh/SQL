@@ -1,0 +1,111 @@
+Date and Time Functions
+
+Date datatypes:
+
+DATE -> '2024-04-10'
+DATETIME -> '2024-04-10 14:30'
+TIMESTAMP -> '2024-04-10 14:30'
+TIME -> '14:30:00'
+
+Function	                            Usage Example	                        What it Does
+NOW() / CURRENT_DATE	                NOW()	                                Current Date & Time
+CURDATE()	                            CURDATE()	                            Current Date only
+DATEDIFF(date1, date2)	                DATEDIFF(NOW(), hire_date)	            Difference in days
+DATE_ADD(date, INTERVAL x DAY)	        DATE_ADD(hire_date, INTERVAL 30 DAY)	Add 30 days
+DATE_SUB(date, INTERVAL x MONTH)	    DATE_SUB(hire_date, INTERVAL 2 MONTH)	Subtract 2 months
+YEAR(date) / MONTH(date) / DAY(date)	Extract part of date	
+DATE_FORMAT(date, 'format')	            DATE_FORMAT(hire_date, '%d-%m-%Y')	    Format as string
+
+CREATE TABLE Order2(OrderID INT PRIMARY KEY,CustomerName VARCHAR(100),OrderDate DATE,Amount DECIMAL(10,2));
+
+INSERT INTO Order2 VALUES 
+(1, 'John', '2025-03-01', 2500.00),
+(2, 'Alice', '2025-03-15', 1800.00),
+(3, 'Bob', '2025-04-01', 3000.00),
+(4, 'Carol', '2025-04-05', 1500.00),
+(5, 'David', '2025-04-08', 2200.00);
+
+ select * from order2;
++---------+--------------+------------+---------+
+| OrderID | CustomerName | OrderDate  | Amount  |
++---------+--------------+------------+---------+
+|       1 | John         | 2025-03-01 | 2500.00 |
+|       2 | Alice        | 2025-03-15 | 1800.00 |
+|       3 | Bob          | 2025-04-01 | 3000.00 |
+|       4 | Carol        | 2025-04-05 | 1500.00 |
+|       5 | David        | 2025-04-08 | 2200.00 |
++---------+--------------+------------+---------+
+5 rows in set (0.00 sec)
+
+Orders in last 30 days
+SELECT * FROM Order2 WHERE OrderDate >= DATE_SUB(CURDATE(),INTERVAL 30 DAY);
++---------+--------------+------------+---------+
+| OrderID | CustomerName | OrderDate  | Amount  |
++---------+--------------+------------+---------+
+|       2 | Alice        | 2025-03-15 | 1800.00 |
+|       3 | Bob          | 2025-04-01 | 3000.00 |
+|       4 | Carol        | 2025-04-05 | 1500.00 |
+|       5 | David        | 2025-04-08 | 2200.00 |
++---------+--------------+------------+---------+
+4 rows in set (0.00 sec)
+
+Orders older than 30 days
+
+SELECT * FROM Order2 WHERE OrderDate < DATE_SUB(CURDATE(),INTERVAL 30 DAY);
++---------+--------------+------------+---------+
+| OrderID | CustomerName | OrderDate  | Amount  |
++---------+--------------+------------+---------+
+|       1 | John         | 2025-03-01 | 2500.00 |
++---------+--------------+------------+---------+
+1 row in set (0.00 sec)
+
+Add 10 days to OrderDate (Preview Future Delivery Date)
+SELECT OrderID, CustomerName, OrderDate, DATE_ADD(OrderDate, INTERVAL 10 DAY) AS DeliveryDate FROM Order2;
++---------+--------------+------------+--------------+
+| OrderID | CustomerName | OrderDate  | DeliveryDate |
++---------+--------------+------------+--------------+
+|       1 | John         | 2025-03-01 | 2025-03-11   |
+|       2 | Alice        | 2025-03-15 | 2025-03-25   |
+|       3 | Bob          | 2025-04-01 | 2025-04-11   |
+|       4 | Carol        | 2025-04-05 | 2025-04-15   |
+|       5 | David        | 2025-04-08 | 2025-04-18   |
++---------+--------------+------------+--------------+
+5 rows in set (0.00 sec)
+
+Total Orders Placed Month Wise
+ SELECT YEAR(OrderDate) AS Year, MONTH(OrderDate) AS Month, COUNT(*) AS TotalOrders FROM Order2 GROUP BY YEAR(OrderDate), MONTH(OrderDate);
++------+-------+-------------+
+| Year | Month | TotalOrders |
++------+-------+-------------+
+| 2025 |     3 |           2 |
+| 2025 |     4 |           3 |
++------+-------+-------------+
+2 rows in set (0.00 sec)
+
+Format OrderDate as DD-MM-YYYY
+
+SELECT OrderID, CustomerName, DATE_FORMAT(OrderDate,'%d-%m-%y') AS FormattedDate FROM Order2;
+'%y' -> 25 -Year
++---------+--------------+---------------+
+| OrderID | CustomerName | FormattedDate |
++---------+--------------+---------------+
+|       1 | John         | 01-03-25      |
+|       2 | Alice        | 15-03-25      |
+|       3 | Bob          | 01-04-25      |
+|       4 | Carol        | 05-04-25      |
+|       5 | David        | 08-04-25      |
++---------+--------------+---------------+
+5 rows in set (0.00 sec)
+
+%Y - 2025
+SELECT OrderID, CustomerName, DATE_FORMAT(OrderDate,'%d-%m-%Y') AS FormattedDate FROM Order2;
++---------+--------------+---------------+
+| OrderID | CustomerName | FormattedDate |
++---------+--------------+---------------+
+|       1 | John         | 01-03-2025    |
+|       2 | Alice        | 15-03-2025    |
+|       3 | Bob          | 01-04-2025    |
+|       4 | Carol        | 05-04-2025    |
+|       5 | David        | 08-04-2025    |
++---------+--------------+---------------+
+5 rows in set (0.00 sec)
