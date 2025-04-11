@@ -1,0 +1,46 @@
+Subquery -> Query inside another Query.
+
+Types : 
+1. Non-Correlated	Runs independently	(Inner query)SELECT AVG(salary) FROM employee
+2. Correlated	Depends on outer query	(Inner query)WHERE e.salary > (SELECT AVG(salary) FROM employee WHERE department = e.department)
+
+
+ select * from employee;
++----+-----------+----------+------------+--------+
+| ID | FirstName | LastName | Department | Salary |
++----+-----------+----------+------------+--------+
+|  1 | John      | Doe      | Sales      |  60000 |
+|  2 | Jane      | Smith    | HR         |  50000 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |
+|  4 | Bob       | Brown    | IT         |  55000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |
++----+-----------+----------+------------+--------+
+5 rows in set (0.00 sec)
+
+Subquery in WHERE Clause
+select employees whose salary is above the department’s average salary
+
+SELECT * FROM Employee e WHERE Salary > (SELECT AVG(Salary) FROM Employee GROUP BY Department HAVING Department = e.Department);
++----+-----------+----------+------------+--------+
+| ID | FirstName | LastName | Department | Salary |
++----+-----------+----------+------------+--------+
+|  3 | Alice     | Johnson  | Sales      |  70000 |
++----+-----------+----------+------------+--------+
+1 row in set (0.00 sec)
+
+This is a Correlated Subquery
+ -> e.department from outer query is used inside subquery
+
+Subquery in SELECT Clause (dynamic columns)
+SELECT e.* , (SELECT AVG(Salary) FROM Employee GROUP BY Department HAVING Department = e.Department) AS AvgDeptSalary FROM Employee e;
++----+-----------+----------+------------+--------+---------------+
+| ID | FirstName | LastName | Department | Salary | AvgDeptSalary |
++----+-----------+----------+------------+--------+---------------+
+|  1 | John      | Doe      | Sales      |  60000 |    65000.0000 |
+|  2 | Jane      | Smith    | HR         |  50000 |    50000.0000 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |    65000.0000 |
+|  4 | Bob       | Brown    | IT         |  55000 |    55000.0000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |    65000.0000 |
++----+-----------+----------+------------+--------+---------------+
+5 rows in set (0.00 sec)
+
