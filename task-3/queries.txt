@@ -49,10 +49,35 @@ HAVING -> Filter Grouped Data (after aggregation)
 WHERE filters rows before grouping
 HAVING filters groups after grouping
 
-SELECT Department, COUNT(*) AS TotalEmployee FROM Employee GROUP BY Department HAVING COUNT(*) > ;
+SELECT Department, COUNT(*) AS TotalEmployee FROM Employee GROUP BY Department HAVING COUNT(*) > 2;
 +------------+---------------+
 | Department | TotalEmployee |
 +------------+---------------+
 | Sales      |             3 |
 +------------+---------------+
 1 row in set (0.00 sec)
+
+Query flow
+
+SELECT -> FROM -> WHERE -> GROUP BY -> HAVING -> ORDER BY
+
+1. FROM     -> Get data from table
+2. WHERE    -> Filter rows before grouping
+3. GROUP BY -> Group filtered rows
+4. HAVING   -> Filter groups after aggregation
+5. ORDER BY -> Sort final output
+
+SELECT Department, SUM(Salary) AS TotalSalary
+FROM Employee                -- FROM (Table)
+WHERE Salary > 50000         -- WHERE (Filter rows first)
+GROUP BY Department          -- GROUP BY (Group rows by Department)
+HAVING SUM(Salary) > 100000  -- HAVING (Filter groups)
+ORDER BY TotalSalary DESC;   -- ORDER BY (Sort output)
+
++------------+-------------+
+| Department | TotalSalary |
++------------+-------------+
+| Sales      |      195000 |
+| IT         |       55000 |
++------------+-------------+
+2 rows in set (0.00 sec)
