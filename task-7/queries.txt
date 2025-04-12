@@ -10,3 +10,178 @@ function_name() OVER (
 )
 
 OVER() -> creates a Window/group.
+
+ROW_NUMBER() -> Unique sequence within partition
+RANK() -> Ranking with gaps (skips ranks on tie)
+DENSE_RANK() -> Ranking without gaps
+LAG() -> Value from previous row
+LEAD() -> Value from next row
+SUM() / AVG() OVER() -> Running totals, moving averages, etc
+
+Employee Table :
+SELECT * FROM Employee;
++----+-----------+----------+------------+--------+
+| ID | FirstName | LastName | Department | Salary |
++----+-----------+----------+------------+--------+
+|  1 | John      | Doe      | Sales      |  60000 |
+|  2 | Jane      | Smith    | HR         |  50000 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |
+|  4 | Bob       | Brown    | IT         |  55000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |
+|  6 | Tom       | Cruise   | Sales      |  60000 |
+|  7 | Jane      | Cruz     | HR         |  50000 |
++----+-----------+----------+------------+--------+
+7 rows in set (0.00 sec)
+
+Rank Employees By Salary within Each Department :
+SELECT *, RANK() OVER (PARTITION BY Department ORDER BY Salary DESC) AS SalaryRank FROM Employee;
++----+-----------+----------+------------+--------+------------+
+| ID | FirstName | LastName | Department | Salary | SalaryRank |
++----+-----------+----------+------------+--------+------------+
+|  2 | Jane      | Smith    | HR         |  50000 |          1 |
+|  7 | Jane      | Cruz     | HR         |  50000 |          1 |
+|  4 | Bob       | Brown    | IT         |  55000 |          1 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |          1 |
+|  5 | Carol     | Davis    | Sales      |  65000 |          2 |
+|  1 | John      | Doe      | Sales      |  60000 |          3 |
+|  6 | Tom       | Cruise   | Sales      |  60000 |          3 |
++----+-----------+----------+------------+--------+------------+
+7 rows in set (0.00 sec)
+
+Ranking with gaps (skips ranks on tie) - Rank()
+
+SELECT *, RANK() OVER (ORDER BY Salary DESC) AS SalaryRank FROM Employee;
++----+-----------+----------+------------+--------+------------+
+| ID | FirstName | LastName | Department | Salary | SalaryRank |
++----+-----------+----------+------------+--------+------------+
+|  3 | Alice     | Johnson  | Sales      |  70000 |          1 |
+|  5 | Carol     | Davis    | Sales      |  65000 |          2 |
+|  1 | John      | Doe      | Sales      |  60000 |          3 |
+|  6 | Tom       | Cruise   | Sales      |  60000 |          3 |
+|  4 | Bob       | Brown    | IT         |  55000 |          5 |
+|  2 | Jane      | Smith    | HR         |  50000 |          6 |
+|  7 | Jane      | Cruz     | HR         |  50000 |          6 |
++----+-----------+----------+------------+--------+------------+
+7 rows in set (0.00 sec)
+
+ROW_NUMBER for each employee in department :
+SELECT *, ROW_NUMBER() OVER(PARTITION BY Department ORDER BY Salary DESC) AS RowNumber FROM Employee;
++----+-----------+----------+------------+--------+-----------+
+| ID | FirstName | LastName | Department | Salary | RowNumber |
++----+-----------+----------+------------+--------+-----------+
+|  2 | Jane      | Smith    | HR         |  50000 |         1 |
+|  7 | Jane      | Cruz     | HR         |  50000 |         2 |
+|  4 | Bob       | Brown    | IT         |  55000 |         1 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |         1 |
+|  5 | Carol     | Davis    | Sales      |  65000 |         2 |
+|  1 | John      | Doe      | Sales      |  60000 |         3 |
+|  6 | Tom       | Cruise   | Sales      |  60000 |         4 |
++----+-----------+----------+------------+--------+-----------+
+7 rows in set (0.00 sec)
+
+Dense Rank -> Ranks without gaps (no skipping on tie)
+SELECT *, DENSE_RANK() OVER (ORDER BY Salary DESC) AS DenseRank FROM Employee;
++----+-----------+----------+------------+--------+-----------+
+| ID | FirstName | LastName | Department | Salary | DenseRank |
++----+-----------+----------+------------+--------+-----------+
+|  3 | Alice     | Johnson  | Sales      |  70000 |         1 |
+|  5 | Carol     | Davis    | Sales      |  65000 |         2 |
+|  1 | John      | Doe      | Sales      |  60000 |         3 |
+|  6 | Tom       | Cruise   | Sales      |  60000 |         3 |
+|  4 | Bob       | Brown    | IT         |  55000 |         4 |
+|  2 | Jane      | Smith    | HR         |  50000 |         5 |
+|  7 | Jane      | Cruz     | HR         |  50000 |         5 |
++----+-----------+----------+------------+--------+-----------+
+7 rows in set (0.00 sec)
+
+LAG & LEAD → Previous & Next Salary within Department
+SELECT *, LAG(Salary) OVER(PARTITION BY Department ORDER BY Salary DESC) AS PrevSalary FROM Employee;
++----+-----------+----------+------------+--------+------------+
+| ID | FirstName | LastName | Department | Salary | PrevSalary |
++----+-----------+----------+------------+--------+------------+
+|  2 | Jane      | Smith    | HR         |  50000 |       NULL |
+|  7 | Jane      | Cruz     | HR         |  50000 |      50000 |
+|  4 | Bob       | Brown    | IT         |  55000 |       NULL |
+|  3 | Alice     | Johnson  | Sales      |  70000 |       NULL |
+|  5 | Carol     | Davis    | Sales      |  65000 |      70000 |
+|  1 | John      | Doe      | Sales      |  60000 |      65000 |
+|  6 | Tom       | Cruise   | Sales      |  60000 |      60000 |
++----+-----------+----------+------------+--------+------------+
+7 rows in set (0.00 sec)
+
+ SELECT *, LEAD(Salary) OVER(PARTITION BY Department ORDER BY Salary DESC) AS NextSalary FROM Employee;
++----+-----------+----------+------------+--------+------------+
+| ID | FirstName | LastName | Department | Salary | NextSalary |
++----+-----------+----------+------------+--------+------------+
+|  2 | Jane      | Smith    | HR         |  50000 |      50000 |
+|  7 | Jane      | Cruz     | HR         |  50000 |       NULL |
+|  4 | Bob       | Brown    | IT         |  55000 |       NULL |
+|  3 | Alice     | Johnson  | Sales      |  70000 |      65000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |      60000 |
+|  1 | John      | Doe      | Sales      |  60000 |      60000 |
+|  6 | Tom       | Cruise   | Sales      |  60000 |       NULL |
++----+-----------+----------+------------+--------+------------+
+7 rows in set (0.00 sec)
+
+SELECT *, LAG(Salary) OVER(PARTITION BY Department ORDER BY Salary DESC) AS PrevSalary, LEAD(Salary) OVER(PARTITION BY Department ORDER BY Salary DESC) AS NextSalary FROM Employee;
++----+-----------+----------+------------+--------+------------+------------+
+| ID | FirstName | LastName | Department | Salary | PrevSalary | NextSalary |
++----+-----------+----------+------------+--------+------------+------------+
+|  2 | Jane      | Smith    | HR         |  50000 |       NULL |      50000 |
+|  7 | Jane      | Cruz     | HR         |  50000 |      50000 |       NULL |
+|  4 | Bob       | Brown    | IT         |  55000 |       NULL |       NULL |
+|  3 | Alice     | Johnson  | Sales      |  70000 |       NULL |      65000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |      70000 |      60000 |
+|  1 | John      | Doe      | Sales      |  60000 |      65000 |      60000 |
+|  6 | Tom       | Cruise   | Sales      |  60000 |      60000 |       NULL |
++----+-----------+----------+------------+--------+------------+------------+
+7 rows in set (0.00 sec)
+
+Running Total of Salary within Department
+SELECT *, SUM(Salary) OVER(PARTITION BY Department ORDER BY Salary DESC) AS RunningTotal FROM Employee;
++----+-----------+----------+------------+--------+--------------+
+| ID | FirstName | LastName | Department | Salary | RunningTotal |
++----+-----------+----------+------------+--------+--------------+
+|  2 | Jane      | Smith    | HR         |  50000 |       100000 |
+|  7 | Jane      | Cruz     | HR         |  50000 |       100000 |
+|  4 | Bob       | Brown    | IT         |  55000 |        55000 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |        70000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |       135000 |
+|  1 | John      | Doe      | Sales      |  60000 |       255000 |
+|  6 | Tom       | Cruise   | Sales      |  60000 |       255000 |
++----+-----------+----------+------------+--------+--------------+
+7 rows in set (0.00 sec)
+
+This is a running total per department ordered by descending salary.
+
+In the HR department, both Jane Smith and Jane Cruz have the same salary — 50000.
+
+Now here’s the trick with running total and same values in ORDER BY:
+
+When multiple rows have the same value in the ORDER BY clause, SQL doesn’t guarantee which comes first unless you specify additional tie-breakers.
+
+So SQL treats both rows as valid starting points depending on the query plan.
+
+That’s why:
+
+For Jane Smith, the cumulative sum of 50000 (hers) + 50000 (Cruz) = 100000
+
+Similarly, for Jane Cruz, same logic: 100000
+
+So they both show RunningTotal = 100000.
+
+to make the order deterministic we can add ID ordering
+
+SELECT *, SUM(Salary) OVER(PARTITION BY Department ORDER BY Salary DESC, ID) AS RunningTotal FROM Employee;
++----+-----------+----------+------------+--------+--------------+
+| ID | FirstName | LastName | Department | Salary | RunningTotal |
++----+-----------+----------+------------+--------+--------------+
+|  2 | Jane      | Smith    | HR         |  50000 |        50000 |
+|  7 | Jane      | Cruz     | HR         |  50000 |       100000 |
+|  4 | Bob       | Brown    | IT         |  55000 |        55000 |
+|  3 | Alice     | Johnson  | Sales      |  70000 |        70000 |
+|  5 | Carol     | Davis    | Sales      |  65000 |       135000 |
+|  1 | John      | Doe      | Sales      |  60000 |       195000 |
+|  6 | Tom       | Cruise   | Sales      |  60000 |       255000 |
++----+-----------+----------+------------+--------+--------------+
+7 rows in set (0.00 sec)
