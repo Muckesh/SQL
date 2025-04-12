@@ -1,0 +1,12 @@
+Window Function
+-> it performs aggregate operations on group of rows, but they produce a result for each row.
+unlike aggregate functions they produce result for each row rather than collapsing into single row.
+-> it creates a Window -> groups
+
+syntax:
+function_name() OVER (
+   PARTITION BY column   -- like GROUP BY (optional)
+   ORDER BY column       -- ranking/order logic
+)
+
+OVER() -> creates a Window/group.
