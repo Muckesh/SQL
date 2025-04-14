@@ -1,0 +1,48 @@
+Stored Procedures and User Defined Functions
+
+Stored Procedure -> precompiled collection of one or more SQL statements that can be called by name.
+      -> used to encapsulate business logic, like generating reports or updating data in bulk.
+
+Syntax : 
+
+DELIMITER //
+
+CREATE PROCEDURE ProcedureName (
+    IN param1 DATATYPE,
+    IN param2 DATATYPE
+)
+BEGIN
+    -- SQL statements
+END //
+
+DELIMITER ;
+
+Calling a Procedure :
+CALL ProcedureName(param1_value, param2_value);
+
+Get Total Sales Between Two Dates
+DELIMITER //
+
+CREATE PROCEDURE TotalSalesByDate (
+    IN StartDate DATE,
+    IN EndDate DATE
+)
+BEGIN
+    SELECT SUM(Amount) AS TotalSales
+    FROM Order2
+    WHERE OrderDate BETWEEN StartDate AND EndDate;
+END //
+
+DELIMITER ;
+
+Call Procedure:
+CALL TotalSalesByDate('2025-04-01', '2025-04-08');
+
++------------+
+| TotalSales |
++------------+
+|    6700.00 |
++------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.01 sec)
