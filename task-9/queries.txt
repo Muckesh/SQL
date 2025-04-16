@@ -1,5 +1,18 @@
 Stored Procedures and User Defined Functions
 
+Stored Procedure vs User-Defined Function (UDF) :
+
+Feature	                Stored Procedure	                                        User-Defined Function (UDF)
+Purpose	                Performs actions (e.g., insert, update, complex logic)	    Returns a value (scalar or table), used in expressions
+Returns	                Zero, one, or multiple result sets	                        Must return exactly one value (in MySQL: scalar only)
+Usage 	                Cannot be used inside a SELECT, WHERE, etc.	                Can be used within SELECT, WHERE, ORDER BY, etc.
+Side Effects	        Can modify data (INSERT, UPDATE, DELETE)	                Cannot modify data (no DML allowed)
+Transaction Control	    Can contain BEGIN, COMMIT, ROLLBACK	                        Cannot use transaction control
+Determinism             Not required to be deterministic	                        Must be marked DETERMINISTIC or NOT DETERMINISTIC
+Call Syntax	            CALL procedure_name(...)	                                SELECT function_name(...)
+Performance	            Used for logic-heavy operations, better for procedural use	Lightweight; used for calculations or value derivations
+
+
 Stored Procedure -> precompiled collection of one or more SQL statements that can be called by name.
       -> used to encapsulate business logic, like generating reports or updating data in bulk.
 
@@ -46,3 +59,97 @@ CALL TotalSalesByDate('2025-04-01', '2025-04-08');
 1 row in set (0.00 sec)
 
 Query OK, 0 rows affected (0.01 sec)
+
+Sales Summary :
+
+DROP PROCEDURE IF EXISTS GetSalesSummary;
+
+DELIMITER //
+CREATE PROCEDURE GetSalesSummary(
+    IN StartDate DATE,
+    IN EndDate DATE
+)
+BEGIN
+    SELECT COUNT(*) AS TotalOrders, SUM(Amount) FROM Order2 WHERE OrderDate BETWEEN StartDate and EndDate;
+END //
+DELIMITER ;
+
+CALL GetSalesSummary('2025-04-01','2025-04-08');
++-------------+-------------+
+| TotalOrders | SUM(Amount) |
++-------------+-------------+
+|           3 |     6700.00 |
++-------------+-------------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+User Defined Functions (UDF) : -> Scalar Function (MySQL)
+-> similar to Procedure but,
+  -> it returns a single value (scalar function) or a table (not supported by mysql)
+  -> can be used inside SELECT, WHERE, etc.
+
+UDF to calculate Discount Price :
+
+DELIMITER //
+CREATE Function CalculateDiscountPrice (
+    price DECIMAL(10,2),
+    discount_rate DECIMAL(5,2)
+)
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    RETURN price - (price*discount_rate / 100);
+END //
+DELIMITER ;
+
+SELECT CalculateDiscountPrice(10000,10) AS DiscountedPrice;
++-----------------+
+| DiscountedPrice |
++-----------------+
+|         9000.00 |
++-----------------+
+1 row in set (0.00 sec)
+
+
+Bonus Calculator :
+
+DELIMITER //
+
+CREATE FUNCTION CalculateBonus (
+    salary DECIMAL(10,2),
+    performance_rating INT
+)
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    DECLARE bonus_rate DECIMAL(5,2);
+
+    IF performance_rating >= 5 THEN
+        SET bonus_rate = 0.20;
+    ELSEIF performance_rating >= 3 THEN
+        SET bonus_rate = 0.10;
+    ELSE
+        SET bonus_rate = 0.05;
+    END IF;
+
+    RETURN salary * bonus_rate;
+END //
+
+DELIMITER ;
+
+SELECT CalculateBonus(60000, 5) AS BonusAmount;
++-------------+
+| BonusAmount |
++-------------+
+|    12000.00 |
++-------------+
+1 row in set (0.00 sec)
+
+DETERMINISTIC vs NOT DETERMINISTIC in SQL Functions :
+
+Aspect	            DETERMINISTIC	                                                NOT DETERMINISTIC
+Definition	        Always returns the same output for the same input values.	    May return different outputs even with the same inputs.
+Examples	        ABS(x), ROUND(x, d)	                                            NOW(), RAND(), UUID(), CURRENT_DATE
+Use Case	        Pure mathematical or logical functions	                        Functions involving time, random values, or external data
+Optimization	    MySQL can cache the result to improve performance.	            MySQL won’t cache the result; must compute every time.
