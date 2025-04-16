@@ -1,0 +1,297 @@
+Comprehensive Database Design :
+
+Ecommerce Database Design :
+
+CREATE DATABASE Ecommerce;
+
+USE ECOMMERCE;
+
+STEP 1: Create Core Tables with Relationships
+
+TABLES :
+1. Customers
+2. Products
+3. Orders
+4. OrderDetails
+5. Inventory
+
+Customers TABLE :
+CREATE TABLE Customers (
+    CustomerID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) UNIQUE,
+    Phone VARCHAR(20),
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO Customers (Name, Email, Phone)
+VALUES 
+('John Doe', 'john@example.com', '9876543210'),
+('Jane Smith', 'jane@example.com', '9876543211'),
+('Alice Johnson', 'alice@example.com', '9876543212');
+
+
+
+Products TABLE:
+CREATE TABLE Products (
+    ProductID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    Price DECIMAL(10, 2) NOT NULL,
+    Category VARCHAR(50),
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO Products (Name, Price, Category)
+VALUES 
+('Laptop', 75000.00, 'Electronics'),
+('Smartphone', 25000.00, 'Electronics'),
+('Desk Chair', 4500.00, 'Furniture'),
+('Bluetooth Speaker', 3200.00, 'Electronics');
+
+
+Orders TABLE :
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY AUTO_INCREMENT,
+    CustomerID INT,
+    OrderDate DATE NOT NULL,
+    TotalAmount DECIMAL(10, 2),
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+);
+
+INSERT INTO Orders (CustomerID, OrderDate, TotalAmount)
+VALUES 
+(1, '2025-04-01', 100000.00),  -- John
+(2, '2025-04-02', 29500.00);   -- Jane
+
+
+OrderDetails TABLE:
+
+This is a many-to-many relationship between Orders and Products.
+
+CREATE TABLE OrderDetails (
+    OrderDetailID INT PRIMARY KEY AUTO_INCREMENT,
+    OrderID INT,
+    ProductID INT,
+    Quantity INT NOT NULL,
+    Price DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
+INSERT INTO OrderDetails (OrderID, ProductID, Quantity, Price)
+VALUES 
+(1, 1, 1, 75000.00),  -- John bought 1 Laptop
+(1, 2, 1, 25000.00),  -- John bought 1 Smartphone
+(2, 3, 1, 4500.00),   -- Jane bought 1 Desk Chair
+(2, 4, 1, 3200.00);   -- Jane bought 1 Bluetooth Speaker
+
+
+Inventory TABLE:
+CREATE TABLE Inventory (
+    ProductID INT PRIMARY KEY,
+    Quantity INT NOT NULL DEFAULT 0,
+    LastUpdated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
+INSERT INTO Inventory (ProductID, Quantity)
+VALUES 
+(1, 10),  -- Laptop
+(2, 20),  -- Smartphone
+(3, 15),  -- Desk Chair
+(4, 25);  -- Bluetooth Speaker
+
+
+STEP 2 : Indexing and Performance Optimization
+
+Indexing :
+Indexes make data retrieval faster, especially for:
+-> WHERE conditions
+-> JOINs
+-> GROUP BY
+-> ORDER BY
+But :
+Too many indexes = slow writes, so we index strategically.
+
+-> Add Index on Orders.OrderDate
+Helps when you query orders in a date range.
+
+CREATE INDEX idx_orders_orderdate ON Orders(OrderDate);
+
+-> Add Index on OrderDetails.ProductID
+Useful for product-specific order analytics.
+
+CREATE INDEX idx_orderdetails_productid ON OrderDetails(ProductID);
+
+-> Add Index on Products.Category
+If you often filter or group by category.
+
+CREATE INDEX idx_products_category ON Products(Category);
+
+STEP 3: Triggers — Automate Business Rules
+
+Triggers :
+Triggers automatically execute logic in response to events like INSERT, UPDATE, or DELETE.
+They're perfect for:
+->Maintaining data integrity
+->Auditing/logging
+->Automating workflows (like updating stock)
+
+-> Create Trigger: Reduce Inventory on Order Placement
+DELIMITER $$
+
+CREATE TRIGGER trg_reduce_inventory
+AFTER INSERT ON OrderDetails
+FOR EACH ROW
+BEGIN
+    UPDATE Inventory
+    SET Quantity = Quantity - NEW.Quantity
+    WHERE ProductID = NEW.ProductID;
+END $$
+
+DELIMITER ;
+
+SELECT * FROM OrderDetails;
++---------------+---------+-----------+----------+----------+
+| OrderDetailID | OrderID | ProductID | Quantity | Price    |
++---------------+---------+-----------+----------+----------+
+|             1 |       1 |         1 |        1 | 75000.00 |
+|             2 |       1 |         2 |        1 | 25000.00 |
+|             3 |       2 |         3 |        1 |  4500.00 |
+|             4 |       2 |         4 |        1 |  3200.00 |
++---------------+---------+-----------+----------+----------+
+4 rows in set (0.00 sec)
+
+SELECT * FROM Inventory;
++-----------+----------+---------------------+
+| ProductID | Quantity | LastUpdated         |
++-----------+----------+---------------------+
+|         1 |       10 | 2025-04-16 15:50:16 |
+|         2 |       20 | 2025-04-16 15:50:16 |
+|         3 |       15 | 2025-04-16 15:50:16 |
+|         4 |       25 | 2025-04-16 15:50:16 |
++-----------+----------+---------------------+
+4 rows in set (0.00 sec)
+
+After inserting a new record into OrderDetails:
+
+INSERT INTO OrderDetails (OrderID, ProductID, Quantity, Price)
+VALUES (1, 4, 2, 3200.00);  -- John buys 2 Bluetooth Speakers
+
+the quantity is reduced by 2.
+SELECT * FROM Inventory WHERE ProductID = 4;
++-----------+----------+---------------------+
+| ProductID | Quantity | LastUpdated         |
++-----------+----------+---------------------+
+|         4 |       23 | 2025-04-16 15:52:12 |
++-----------+----------+---------------------+
+1 row in set (0.00 sec)
+
+STEP 4: Transactions — Ensure Data Consistency
+
+Transaction :
+A transaction is a group of SQL operations treated as a single unit.
+It ensures:
+-> Atomicity: All operations succeed or none do.
+-> Consistency: DB moves from one valid state to another.
+-> Isolation: Transactions don't interfere with each other.
+-> Durability: Once committed, changes are permanent.
+
+GOAL for This Step:
+-> Simulate a real order process that:
+-> Inserts into Orders
+-> Inserts into OrderDetails
+-> Updates Inventory
+-> Rolls back if anything fails
+
+Manual Transaction in SQL:
+
+START TRANSACTION;
+
+-- Step 1: Insert into Orders
+INSERT INTO Orders (CustomerID, OrderDate, TotalAmount)
+VALUES (3, CURDATE(), 12000.00);
+
+-- Get last inserted OrderID
+SET @last_order_id = LAST_INSERT_ID();
+
+-- Step 2: Insert into OrderDetails (e.g., 2 Desk Chairs)
+INSERT INTO OrderDetails (OrderID, ProductID, Quantity, Price)
+VALUES (@last_order_id, 3, 2, 4500.00);
+
+-- Step 3: Update Inventory
+UPDATE Inventory
+SET Quantity = Quantity - 2
+WHERE ProductID = 3;
+
+-- Optional: Check stock before committing
+-- SELECT Quantity FROM Inventory WHERE ProductID = 3;
+
+-- Step 4: Commit if all OK
+COMMIT;
+
+ROLLBACK EXAMPLE :
+START TRANSACTION;
+
+-- Insert Order
+INSERT INTO Orders (CustomerID, OrderDate, TotalAmount)
+VALUES (2, CURDATE(), 99999.00);
+
+-- Wrong Product ID (e.g., 999 doesn't exist)
+INSERT INTO OrderDetails (OrderID, ProductID, Quantity, Price)
+VALUES (LAST_INSERT_ID(), 999, 1, 99999.00);
+
+-- Will fail — rollback everything
+ROLLBACK;
+
+STEP 5: Views & Materialized Views
+
+View :
+A view is a virtual table based on a SQL query.
+It's like a saved SELECT statement — you can query it as if it's a table.
+-> Simplify complex joins
+-> Improve code reusability and readability
+-> Abstract sensitive columns
+-> Present customized data per use-case
+
+View for Order Summary :
+CREATE VIEW OrderSummary AS
+SELECT 
+    o.OrderID,
+    c.Name AS CustomerName,
+    o.OrderDate,
+    o.TotalAmount
+FROM Orders o
+JOIN Customers c ON o.CustomerID = c.CustomerID;
+
+ SELECT * FROM OrderSummary;
++---------+---------------+------------+-------------+
+| OrderID | CustomerName  | OrderDate  | TotalAmount |
++---------+---------------+------------+-------------+
+|       1 | John Doe      | 2025-04-01 |   100000.00 |
+|       2 | Jane Smith    | 2025-04-02 |    29500.00 |
+|       3 | Alice Johnson | 2025-04-16 |    12000.00 |
++---------+---------------+------------+-------------+
+3 rows in set (0.00 sec)
+
+Detailed Order View :
+CREATE VIEW OrderDetailsView AS
+SELECT 
+    o.OrderID,
+    c.Name AS Customer,
+    p.Name AS Product,
+    od.Quantity,
+    od.Price,
+    (od.Quantity * od.Price) AS Subtotal
+FROM OrderDetails od
+JOIN Orders o ON od.OrderID = o.OrderID
+JOIN Customers c ON o.CustomerID = c.CustomerID
+JOIN Products p ON od.ProductID = p.ProductID;
+
+SELECT * FROM OrderDetailsView WHERE Customer = 'Alice Johnson';
++---------+---------------+------------+----------+---------+----------+
+| OrderID | Customer      | Product    | Quantity | Price   | Subtotal |
++---------+---------------+------------+----------+---------+----------+
+|       3 | Alice Johnson | Desk Chair |        2 | 4500.00 |  9000.00 |
++---------+---------------+------------+----------+---------+----------+
+1 row in set (0.00 sec)
